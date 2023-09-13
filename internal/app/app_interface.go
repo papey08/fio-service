@@ -22,11 +22,16 @@ type FioRepo interface {
 	DeleteFio(ctx context.Context, id uint) error
 }
 
+type Publisher interface {
+	// SendFio sends invalid fio to message broker
+	SendFio(fio model.Fio, reason string)
+}
+
 type App interface {
 	// FillFio fills fields Age, Gender and Nation of given fio and adds it to database
 	FillFio(ctx context.Context, f model.Fio) (model.Fio, error)
 
-	// GetFioById gets fio with given id
+	/*// GetFioById gets fio with given id
 	GetFioById(ctx context.Context, id uint) (model.Fio, error)
 
 	// GetFioByFilter gets all fios from database by given filter
@@ -36,5 +41,7 @@ type App interface {
 	UpdateFio(ctx context.Context, id uint, f model.Fio) (model.Fio, error)
 
 	// DeleteFio deletes fio by id
-	DeleteFio(ctx context.Context, id uint) error
+	DeleteFio(ctx context.Context, id uint) error*/
+
+	FioRepo
 }
