@@ -14,12 +14,8 @@ type app struct {
 }
 
 func (a *app) FillFio(ctx context.Context, f model.Fio) (model.Fio, error) {
-	if f.Name == "" || f.Surname == "" { // sending fio to FIO_FAILED if there are no of any necessary fields
-		a.SendFio(f, model.ErrorFioNoFields.Error())
-		return model.Fio{}, model.ErrorFioNoFields
-	} else if !valid.Name(f.Name) || !valid.Name(f.Surname) || !valid.Name(f.Patronymic) { // sending fio to FIO_FAILED if some of the fields are invalid
-		a.SendFio(f, model.ErrorFioInvalidFields.Error())
-		return model.Fio{}, model.ErrorFioInvalidFields
+	if err := valid.NonFilledFio(f); err != nil { // check if name, surname or patronymic are valid
+		return model.Fio{}, err
 	}
 
 	// fill age field
@@ -49,7 +45,23 @@ func (a *app) FillFio(ctx context.Context, f model.Fio) (model.Fio, error) {
 		f.Nation = nation
 	}
 
-	return a.AddFio(ctx, f)
+	return a.FioRepo.AddFio(ctx, f)
+}
+
+func (a *app) AddFio(ctx context.Context, f model.Fio) (model.Fio, error) {
+	if err := valid.FilledFio(f); err != nil { // check if fio is valid
+		return model.Fio{}, err
+	}
+
+	return a.FioRepo.AddFio(ctx, f)
+}
+
+func (a *app) UpdateFio(ctx context.Context, id uint, f model.Fio) (model.Fio, error) {
+	if err := valid.FilledFio(f); err != nil { // check if fio is valid
+		return model.Fio{}, err
+	}
+
+	return a.FioRepo.UpdateFio(ctx, id, f)
 }
 
 /*func (a *app) GetFioById(ctx context.Context, id uint) (model.Fio, error) {

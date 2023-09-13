@@ -1,33 +1,89 @@
 package valid
 
 import (
+	"fio-service/internal/model"
 	"github.com/go-playground/assert/v2"
 	"testing"
 )
 
-type nameTest struct {
+type nonFilledFioTest struct {
 	description string
-	name        string
-	expected    bool
+	fio         model.Fio
+	expected    error
 }
 
-func TestName(t *testing.T) {
-	nameTests := []nameTest{
+func TestNonFilledFio(t *testing.T) {
+	tests := []nonFilledFioTest{
 		{
-			description: "valid name",
-			name:        "Dmitriy",
-			expected:    true,
+			description: "valid fio",
+			fio: model.Fio{
+				Name:       "Dmitriy",
+				Surname:    "Ushakov",
+				Patronymic: "Vasilevich",
+			},
+			expected: nil,
 		},
 		{
-			description: "invalid name with non allowed symbols",
-			name:        "X Æ A-12",
-			expected:    false,
+			description: "invalid fio without necessary field",
+			fio: model.Fio{
+				Name: "Dmitriy",
+			},
+			expected: model.ErrorFioNoFields,
+		},
+		{
+			description: "invalid fio with invalid name",
+			fio: model.Fio{
+				Name:    "X Æ A-12",
+				Surname: "Musk",
+			},
+			expected: model.ErrorFioInvalidFields,
 		},
 	}
 
-	for _, test := range nameTests {
+	for _, test := range tests {
 		t.Run(test.description, func(t *testing.T) {
-			assert.Equal(t, Name(test.name), test.expected)
+			assert.Equal(t, NonFilledFio(test.fio), test.expected)
+		})
+	}
+}
+
+type filledFioTest struct {
+	description string
+	fio         model.Fio
+	expected    error
+}
+
+func TestFilledFio(t *testing.T) {
+	tests := []filledFioTest{
+		{
+			description: "valid fio",
+			fio: model.Fio{
+				Name:       "Dmitriy",
+				Surname:    "Ushakov",
+				Patronymic: "Vasilevich",
+				Age:        42,
+				Gender:     "male",
+				Nation:     "UA",
+			},
+			expected: nil,
+		},
+		{
+			description: "invalid fio",
+			fio: model.Fio{
+				Name:       "Dmitriy",
+				Surname:    "Ushakov",
+				Patronymic: "Vasilevich",
+				Age:        -1,
+				Gender:     "other",
+				Nation:     "other",
+			},
+			expected: model.ErrorFioInvalidFields,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.description, func(t *testing.T) {
+			assert.Equal(t, FilledFio(test.fio), test.expected)
 		})
 	}
 }
