@@ -4,8 +4,8 @@ type Filter struct {
 	// Offset is how many fios to skip in database
 	Offset int
 
-	// Amount is how many fios to return
-	Amount int
+	// Limit is how many fios to return
+	Limit int
 
 	// ByName is true when need to filter fios by Name
 	ByName bool

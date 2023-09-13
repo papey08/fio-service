@@ -5,7 +5,7 @@ type Fio struct {
 	Name       string
 	Surname    string
 	Patronymic string
-	Age        uint
+	Age        int
 	Gender     string
 	Nation     string
 }

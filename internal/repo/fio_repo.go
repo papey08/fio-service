@@ -29,8 +29,8 @@ type cacheRepo interface {
 	// SetFioByKey sets fio with its id as key
 	SetFioByKey(ctx context.Context, f model.Fio) (model.Fio, error)
 
-	// DeleteFio deletes fio by key
-	DeleteFio(ctx context.Context, key string) error
+	// DeleteFioByKey deletes fio by key
+	DeleteFioByKey(ctx context.Context, key string) error
 }
 
 type Repo struct {
@@ -39,26 +39,26 @@ type Repo struct {
 }
 
 func (r *Repo) AddFio(ctx context.Context, f model.Fio) (model.Fio, error) {
-	// TODO: implement
-	return model.Fio{}, nil
+	// TODO: implement cache
+	return r.InsertFio(ctx, f)
 }
 
 func (r *Repo) GetFioById(ctx context.Context, id uint) (model.Fio, error) {
-	// TODO: implement
-	return model.Fio{}, nil
+	// TODO: implement cache
+	return r.SelectFioById(ctx, id)
 }
 
 func (r *Repo) GetFioByFilter(ctx context.Context, f model.Filter) ([]model.Fio, error) {
-	// TODO: implement
-	return nil, nil
+	// TODO: implement cache
+	return r.SelectFioByFilter(ctx, f)
 }
 
 func (r *Repo) UpdateFio(ctx context.Context, id uint, f model.Fio) (model.Fio, error) {
-	// TODO: implement
-	return model.Fio{}, nil
+	// TODO: implement cache
+	return r.UpdateFio(ctx, id, f)
 }
 
 func (r *Repo) DeleteFio(ctx context.Context, id uint) error {
-	// TODO: implement
-	return nil
+	// TODO: implement cache
+	return r.DeleteFio(ctx, id)
 }
