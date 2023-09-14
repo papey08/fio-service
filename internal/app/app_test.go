@@ -267,7 +267,7 @@ func (s *appTestSuite) TestAddFio() {
 }
 
 type updateFioMock struct {
-	id     uint
+	id     int
 	fio    model.Fio
 	gotFio model.Fio
 	err    error
@@ -275,7 +275,7 @@ type updateFioMock struct {
 
 type updateFioTest struct {
 	description string
-	givenId     uint
+	givenId     int
 	givenFio    model.Fio
 	expectedFio model.Fio
 	expectedErr error

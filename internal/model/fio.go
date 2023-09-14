@@ -1,7 +1,7 @@
 package model
 
 type Fio struct {
-	Id         uint
+	Id         int
 	Name       string
 	Surname    string
 	Patronymic string

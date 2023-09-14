@@ -68,7 +68,7 @@ func (a *app) AddFio(ctx context.Context, f model.Fio) (model.Fio, error) {
 	return a.FioRepo.AddFio(ctx, f)
 }
 
-func (a *app) UpdateFio(ctx context.Context, id uint, f model.Fio) (model.Fio, error) {
+func (a *app) UpdateFio(ctx context.Context, id int, f model.Fio) (model.Fio, error) {
 	if err := valid.FilledFio(f); err != nil { // check if fio is valid
 		return model.Fio{}, err
 	}

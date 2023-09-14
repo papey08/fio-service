@@ -10,16 +10,16 @@ type FioRepo interface {
 	AddFio(ctx context.Context, f model.Fio) (model.Fio, error)
 
 	// GetFioById searches fio in database with given id
-	GetFioById(ctx context.Context, id uint) (model.Fio, error)
+	GetFioById(ctx context.Context, id int) (model.Fio, error)
 
 	// GetFioByFilter searches fios in database by given filter
 	GetFioByFilter(ctx context.Context, f model.Filter) ([]model.Fio, error)
 
 	// UpdateFio updates fio fields with given id
-	UpdateFio(ctx context.Context, id uint, f model.Fio) (model.Fio, error)
+	UpdateFio(ctx context.Context, id int, f model.Fio) (model.Fio, error)
 
 	// DeleteFio deletes
-	DeleteFio(ctx context.Context, id uint) error
+	DeleteFio(ctx context.Context, id int) error
 }
 
 type Publisher interface {

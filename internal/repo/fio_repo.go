@@ -13,7 +13,7 @@ import (
 
 type permanentRepo interface {
 	// SelectFioById selects fio by given id
-	SelectFioById(ctx context.Context, id uint) (model.Fio, error)
+	SelectFioById(ctx context.Context, id int) (model.Fio, error)
 
 	// SelectFioByFilter selects all fios by given filter
 	SelectFioByFilter(ctx context.Context, f model.Filter) ([]model.Fio, error)
@@ -22,21 +22,21 @@ type permanentRepo interface {
 	InsertFio(ctx context.Context, f model.Fio) (model.Fio, error)
 
 	// UpdateFio updates fields of existing fio by id
-	UpdateFio(ctx context.Context, id uint, f model.Fio) (model.Fio, error)
+	UpdateFio(ctx context.Context, id int, f model.Fio) (model.Fio, error)
 
 	// DeleteFio deletes fio by id
-	DeleteFio(ctx context.Context, id uint) error
+	DeleteFio(ctx context.Context, id int) error
 }
 
 type cacheRepo interface {
 	// GetFioByKey searches fio with given key
-	GetFioByKey(ctx context.Context, key uint) (model.Fio, error)
+	GetFioByKey(ctx context.Context, key int) (model.Fio, error)
 
 	// SetFioByKey sets fio with its id as key
 	SetFioByKey(ctx context.Context, f model.Fio) (model.Fio, error)
 
 	// DeleteFioByKey deletes fio by key
-	DeleteFioByKey(ctx context.Context, key uint) error
+	DeleteFioByKey(ctx context.Context, key int) error
 }
 
 type Repo struct {
@@ -68,7 +68,7 @@ func (r *Repo) AddFio(ctx context.Context, f model.Fio) (model.Fio, error) {
 	return fio, nil
 }
 
-func (r *Repo) GetFioById(ctx context.Context, id uint) (model.Fio, error) {
+func (r *Repo) GetFioById(ctx context.Context, id int) (model.Fio, error) {
 	if fio, err := r.GetFioByKey(ctx, id); errors.Is(err, model.ErrorFioRepo) { // case when something wrong with cache
 		return model.Fio{}, err
 	} else if err == nil { // case when fio was found in cache
@@ -90,7 +90,7 @@ func (r *Repo) GetFioByFilter(ctx context.Context, f model.Filter) ([]model.Fio,
 	return r.SelectFioByFilter(ctx, f)
 }
 
-func (r *Repo) UpdateFio(ctx context.Context, id uint, f model.Fio) (model.Fio, error) {
+func (r *Repo) UpdateFio(ctx context.Context, id int, f model.Fio) (model.Fio, error) {
 	fio, err := r.permanentRepo.UpdateFio(ctx, id, f) // update fio in permanent db
 	if err != nil {
 		return model.Fio{}, err
@@ -103,7 +103,7 @@ func (r *Repo) UpdateFio(ctx context.Context, id uint, f model.Fio) (model.Fio, 
 	return fio, nil
 }
 
-func (r *Repo) DeleteFio(ctx context.Context, id uint) error {
+func (r *Repo) DeleteFio(ctx context.Context, id int) error {
 	err := r.permanentRepo.DeleteFio(ctx, id) // delete fio from permanent db
 	if err != nil {
 		return err

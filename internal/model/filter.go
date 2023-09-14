@@ -21,7 +21,7 @@ type Filter struct {
 
 	// ByAge is true when need to filter fios by Age
 	ByAge bool
-	Age   uint
+	Age   int
 
 	// ByGender is true when need to filter fios by Gender
 	ByGender bool

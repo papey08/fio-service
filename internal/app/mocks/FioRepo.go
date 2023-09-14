@@ -33,11 +33,11 @@ func (_m *FioRepo) AddFio(ctx context.Context, f model.Fio) (model.Fio, error) {
 }
 
 // DeleteFio provides a mock function with given fields: ctx, id
-func (_m *FioRepo) DeleteFio(ctx context.Context, id uint) error {
+func (_m *FioRepo) DeleteFio(ctx context.Context, id int) error {
 	ret := _m.Called(ctx, id)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, uint) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, int) error); ok {
 		r0 = rf(ctx, id)
 	} else {
 		r0 = ret.Error(0)
@@ -70,18 +70,18 @@ func (_m *FioRepo) GetFioByFilter(ctx context.Context, f model.Filter) ([]model.
 }
 
 // GetFioById provides a mock function with given fields: ctx, id
-func (_m *FioRepo) GetFioById(ctx context.Context, id uint) (model.Fio, error) {
+func (_m *FioRepo) GetFioById(ctx context.Context, id int) (model.Fio, error) {
 	ret := _m.Called(ctx, id)
 
 	var r0 model.Fio
-	if rf, ok := ret.Get(0).(func(context.Context, uint) model.Fio); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, int) model.Fio); ok {
 		r0 = rf(ctx, id)
 	} else {
 		r0 = ret.Get(0).(model.Fio)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, uint) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
 		r1 = rf(ctx, id)
 	} else {
 		r1 = ret.Error(1)
@@ -91,18 +91,18 @@ func (_m *FioRepo) GetFioById(ctx context.Context, id uint) (model.Fio, error) {
 }
 
 // UpdateFio provides a mock function with given fields: ctx, id, f
-func (_m *FioRepo) UpdateFio(ctx context.Context, id uint, f model.Fio) (model.Fio, error) {
+func (_m *FioRepo) UpdateFio(ctx context.Context, id int, f model.Fio) (model.Fio, error) {
 	ret := _m.Called(ctx, id, f)
 
 	var r0 model.Fio
-	if rf, ok := ret.Get(0).(func(context.Context, uint, model.Fio) model.Fio); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, int, model.Fio) model.Fio); ok {
 		r0 = rf(ctx, id, f)
 	} else {
 		r0 = ret.Get(0).(model.Fio)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, uint, model.Fio) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, int, model.Fio) error); ok {
 		r1 = rf(ctx, id, f)
 	} else {
 		r1 = ret.Error(1)

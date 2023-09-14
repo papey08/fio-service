@@ -1,15 +1,16 @@
 package graphql
 
 import (
+	"context"
 	"fio-service/internal/app"
 	"github.com/graphql-go/graphql"
 	"github.com/graphql-go/handler"
 	"net/http"
 )
 
-func NewGraphQLServer(a app.App, addr string) (*http.Server, error) {
-	query := rootQuery(a)
-	mutation := rootMutation(a)
+func NewGraphQLServer(ctx context.Context, a app.App, addr string) (*http.Server, error) {
+	query := rootQuery(ctx, a)
+	mutation := rootMutation(ctx, a)
 
 	schema, err := graphql.NewSchema(graphql.SchemaConfig{
 		Query:    query,

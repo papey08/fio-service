@@ -32,7 +32,7 @@ func fioToCachedFio(f model.Fio) cachedFio {
 	}
 }
 
-func cachedFioToFio(f cachedFio, id uint) model.Fio {
+func cachedFioToFio(f cachedFio, id int) model.Fio {
 	return model.Fio{
 		Id:         id,
 		Name:       f.Name,
@@ -48,7 +48,7 @@ type Repo struct {
 	redis.Client
 }
 
-func (r *Repo) GetFioByKey(ctx context.Context, key uint) (model.Fio, error) {
+func (r *Repo) GetFioByKey(ctx context.Context, key int) (model.Fio, error) {
 	fioData, err := r.Get(ctx, strconv.Itoa(int(key))).Result()
 	if err == redis.Nil {
 		return model.Fio{}, model.ErrorFioNotFound
@@ -73,7 +73,7 @@ func (r *Repo) SetFioByKey(ctx context.Context, f model.Fio) (model.Fio, error) 
 	return f, nil
 }
 
-func (r *Repo) DeleteFioByKey(ctx context.Context, key uint) error {
+func (r *Repo) DeleteFioByKey(ctx context.Context, key int) error {
 	_, err := r.Del(ctx, strconv.Itoa(int(key))).Result()
 	if err == redis.Nil || err == nil {
 		return nil

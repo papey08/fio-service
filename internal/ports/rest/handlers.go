@@ -13,7 +13,8 @@ func addFio(a app.App) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var reqBody addFioRequest
 		if err := c.BindJSON(&reqBody); err != nil {
-			c.AbortWithStatusJSON(http.StatusBadRequest, errorResponse(err))
+			c.AbortWithStatusJSON(http.StatusBadRequest, errorResponse(model.ErrorInvalidInput))
+			return
 		}
 
 		fio, err := a.AddFio(c, model.Fio{
@@ -44,10 +45,11 @@ func getFioById(a app.App) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id, err := strconv.Atoi(c.Param("id"))
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusBadRequest, errorResponse(err))
+			c.AbortWithStatusJSON(http.StatusBadRequest, errorResponse(model.ErrorInvalidInput))
+			return
 		}
 
-		fio, err := a.GetFioById(c, uint(id))
+		fio, err := a.GetFioById(c, id)
 
 		switch {
 		case errors.Is(err, model.ErrorFioNotFound):
@@ -64,7 +66,8 @@ func getFioByFilter(a app.App) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var reqBody getFioByFilterRequest
 		if err := c.BindJSON(&reqBody); err != nil {
-			c.AbortWithStatusJSON(http.StatusBadRequest, errorResponse(err))
+			c.AbortWithStatusJSON(http.StatusBadRequest, errorResponse(model.ErrorInvalidInput))
+			return
 		}
 
 		fios, err := a.GetFioByFilter(c, model.Filter{
@@ -97,15 +100,17 @@ func updateFio(a app.App) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id, err := strconv.Atoi(c.Param("id"))
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusBadRequest, errorResponse(err))
+			c.AbortWithStatusJSON(http.StatusBadRequest, errorResponse(model.ErrorInvalidInput))
+			return
 		}
 
 		var reqBody updateFioRequest
 		if err = c.BindJSON(&reqBody); err != nil {
-			c.AbortWithStatusJSON(http.StatusBadRequest, errorResponse(err))
+			c.AbortWithStatusJSON(http.StatusBadRequest, errorResponse(model.ErrorInvalidInput))
+			return
 		}
 
-		fio, err := a.UpdateFio(c, uint(id), model.Fio{
+		fio, err := a.UpdateFio(c, id, model.Fio{
 			Name:       reqBody.Name,
 			Surname:    reqBody.Surname,
 			Patronymic: reqBody.Patronymic,
@@ -133,10 +138,11 @@ func deleteFio(a app.App) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id, err := strconv.Atoi(c.Param("id"))
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusBadRequest, errorResponse(err))
+			c.AbortWithStatusJSON(http.StatusBadRequest, errorResponse(model.ErrorInvalidInput))
+			return
 		}
 
-		err = a.DeleteFio(c, uint(id))
+		err = a.DeleteFio(c, id)
 
 		switch {
 		case errors.Is(err, model.ErrorFioNotFound):

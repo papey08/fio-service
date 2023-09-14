@@ -47,7 +47,7 @@ type Repo struct {
 	pgx.Conn
 }
 
-func (r *Repo) SelectFioById(ctx context.Context, id uint) (model.Fio, error) {
+func (r *Repo) SelectFioById(ctx context.Context, id int) (model.Fio, error) {
 	row := r.QueryRow(ctx, selectFioByIdQuery, id)
 	var f model.Fio
 	if err := row.Scan(&f.Id, &f.Name, &f.Surname, &f.Patronymic, &f.Age, &f.Gender, &f.Nation); errors.Is(err, pgx.ErrNoRows) {
@@ -85,7 +85,7 @@ func (r *Repo) SelectFioByFilter(ctx context.Context, f model.Filter) ([]model.F
 }
 
 func (r *Repo) InsertFio(ctx context.Context, f model.Fio) (model.Fio, error) {
-	var insertedFioId uint
+	var insertedFioId int
 	err := r.QueryRow(ctx, insertFioQuery,
 		f.Name,
 		f.Surname,
@@ -105,7 +105,7 @@ func (r *Repo) InsertFio(ctx context.Context, f model.Fio) (model.Fio, error) {
 	return f, nil
 }
 
-func (r *Repo) UpdateFio(ctx context.Context, id uint, f model.Fio) (model.Fio, error) {
+func (r *Repo) UpdateFio(ctx context.Context, id int, f model.Fio) (model.Fio, error) {
 	e, err := r.Exec(ctx, updateFioQuery,
 		id,
 		f.Name,
@@ -132,7 +132,7 @@ func (r *Repo) UpdateFio(ctx context.Context, id uint, f model.Fio) (model.Fio, 
 	}
 }
 
-func (r *Repo) DeleteFio(ctx context.Context, id uint) error {
+func (r *Repo) DeleteFio(ctx context.Context, id int) error {
 	e, err := r.Exec(ctx, deleteFioQuery, id)
 	if err != nil {
 		log.Println("DeleteFio error:", err.Error())

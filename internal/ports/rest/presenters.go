@@ -23,7 +23,7 @@ type getFioByFilterRequest struct {
 	Patronymic   string `json:"patronymic"`
 
 	ByAge bool `json:"by_age"`
-	Age   uint `json:"age"`
+	Age   int  `json:"age"`
 
 	ByGender bool   `json:"by_gender"`
 	Gender   string `json:"gender"`
