@@ -14,11 +14,13 @@ const (
 	nationUrl = "https://api.nationalize.io/?name=%s"
 )
 
+type Apis struct{}
+
 type ageResponse struct {
 	Age int `json:"age"`
 }
 
-func GetAge(name string) (int, error) {
+func (a *Apis) GetAge(name string) (int, error) {
 	url := fmt.Sprintf(ageUrl, name)
 	resp, err := http.Get(url)
 	if err != nil {
@@ -47,7 +49,7 @@ type genderResponse struct {
 	Gender string `json:"gender"`
 }
 
-func GetGender(name string) (string, error) {
+func (a *Apis) GetGender(name string) (string, error) {
 	url := fmt.Sprintf(genderUrl, name)
 	resp, err := http.Get(url)
 	if err != nil {
@@ -80,7 +82,7 @@ type nationResponse struct {
 	Countries []country `json:"country"`
 }
 
-func GetNation(name string) (string, error) {
+func (a *Apis) GetNation(name string) (string, error) {
 	url := fmt.Sprintf(nationUrl, name)
 	resp, err := http.Get(url)
 	if err != nil {

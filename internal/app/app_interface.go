@@ -27,21 +27,20 @@ type Publisher interface {
 	SendFio(fio model.Fio, reason string)
 }
 
+type Apis interface {
+	// GetAge makes a http request to get age by name
+	GetAge(name string) (int, error)
+
+	// GetGender makes a http request to get gender by name
+	GetGender(name string) (string, error)
+
+	// GetNation makes a http request to get nation by name
+	GetNation(name string) (string, error)
+}
+
 type App interface {
 	// FillFio fills fields Age, Gender and Nation of given fio and adds it to database
 	FillFio(ctx context.Context, f model.Fio) (model.Fio, error)
-
-	/*// GetFioById gets fio with given id
-	GetFioById(ctx context.Context, id uint) (model.Fio, error)
-
-	// GetFioByFilter gets all fios from database by given filter
-	GetFioByFilter(ctx context.Context, f model.Filter) ([]model.Fio, error)
-
-	// UpdateFio updates fields of existing fio by id
-	UpdateFio(ctx context.Context, id uint, f model.Fio) (model.Fio, error)
-
-	// DeleteFio deletes fio by id
-	DeleteFio(ctx context.Context, id uint) error*/
 
 	FioRepo
 }
