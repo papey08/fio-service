@@ -24,7 +24,7 @@ type FioRepo interface {
 
 type Publisher interface {
 	// SendFio sends invalid fio to message broker
-	SendFio(fio model.Fio, reason string)
+	SendFio(ctx context.Context, fio model.Fio, reason string) error
 }
 
 type Apis interface {

@@ -23,13 +23,17 @@ func NewApp(fr FioRepo, p Publisher, a Apis) App {
 
 func (a *app) FillFio(ctx context.Context, f model.Fio) (model.Fio, error) {
 	if err := valid.NonFilledFio(f); err != nil { // check if name, surname or patronymic are valid
-		a.SendFio(f, err.Error())
+		if sendErr := a.SendFio(ctx, f, err.Error()); sendErr != nil {
+			return model.Fio{}, model.ErrorSendingFio
+		}
 		return model.Fio{}, err
 	}
 
 	// fill age field
 	if age, err := a.GetAge(f.Name); errors.Is(err, model.ErrorNonExistName) {
-		a.SendFio(f, err.Error())
+		if sendErr := a.SendFio(ctx, f, err.Error()); sendErr != nil {
+			return model.Fio{}, model.ErrorSendingFio
+		}
 		return model.Fio{}, model.ErrorNonExistName
 	} else if err != nil {
 		return model.Fio{}, model.ErrorApi
@@ -39,7 +43,9 @@ func (a *app) FillFio(ctx context.Context, f model.Fio) (model.Fio, error) {
 
 	// fill gender field
 	if gender, err := a.GetGender(f.Name); errors.Is(err, model.ErrorNonExistName) {
-		a.SendFio(f, err.Error())
+		if sendErr := a.SendFio(ctx, f, err.Error()); sendErr != nil {
+			return model.Fio{}, model.ErrorSendingFio
+		}
 		return model.Fio{}, model.ErrorNonExistName
 	} else if err != nil {
 		return model.Fio{}, model.ErrorApi
@@ -49,7 +55,9 @@ func (a *app) FillFio(ctx context.Context, f model.Fio) (model.Fio, error) {
 
 	// fill nation field
 	if nation, err := a.GetNation(f.Name); errors.Is(err, model.ErrorNonExistName) {
-		a.SendFio(f, err.Error())
+		if sendErr := a.SendFio(ctx, f, err.Error()); sendErr != nil {
+			return model.Fio{}, model.ErrorSendingFio
+		}
 		return model.Fio{}, model.ErrorNonExistName
 	} else if err != nil {
 		return model.Fio{}, model.ErrorApi

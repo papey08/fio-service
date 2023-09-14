@@ -8,9 +8,6 @@ import (
 	"github.com/segmentio/kafka-go"
 )
 
-// maxBytes is a longest length of kafka message
-const maxBytes = 1000
-
 type comingFio struct {
 	Name       string `json:"name"`
 	Surname    string `json:"surname"`
@@ -18,19 +15,18 @@ type comingFio struct {
 }
 
 type FioTopic struct {
-	Conn *kafka.Conn
+	Reader *kafka.Reader
 	app.App
 }
 
-func NewFioTopic(ctx context.Context, a app.App, network string, addr string, topic string) (FioTopic, error) {
-	fioConn, err := kafka.DialLeader(ctx, network, addr, topic, 0)
-	if err != nil {
-		return FioTopic{}, err
-	}
+func NewFioTopic(a app.App, addr string, topic string) FioTopic {
 	return FioTopic{
-		Conn: fioConn,
-		App:  a,
-	}, err
+		Reader: kafka.NewReader(kafka.ReaderConfig{
+			Brokers: []string{addr},
+			Topic:   topic,
+		}),
+		App: a,
+	}
 }
 
 func (f *FioTopic) ListenFio(ctx context.Context) {
@@ -39,7 +35,7 @@ func (f *FioTopic) ListenFio(ctx context.Context) {
 		case <-ctx.Done():
 			return
 		default:
-			msg, _ := f.Conn.ReadMessage(maxBytes)
+			msg, _ := f.Reader.ReadMessage(ctx)
 
 			var fio comingFio
 			err := json.Unmarshal(msg.Value, &fio)

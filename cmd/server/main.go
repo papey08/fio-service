@@ -49,13 +49,10 @@ func main() {
 	}()
 	log.Println("connected to redis successfully")
 
-	// configuring kafka FIO_FAILED
-	p, err := publisher.NewFioFailedTopic(ctx, "tcp", "localhost:9092", "FIO_FAILED")
-	if err != nil {
-		// TODO: log
-	}
+	// configuring kafka FIO_FAILED publisher
+	p := publisher.NewFioFailedTopic("localhost:9092", "FIO_FAILED")
 	defer func() {
-		_ = p.Conn.Close()
+		_ = p.Writer.Close()
 	}()
 	log.Println("connected to kafka FIO_FAILED successfully")
 
@@ -83,13 +80,11 @@ func main() {
 		_ = graphqlServer.ListenAndServe()
 	}()
 
-	// configuring kafka FIO
-	ft, err := consumer.NewFioTopic(ctx, a, "tcp", "localhost:9092", "FIO")
-	if err != nil {
-		// TODO
-	}
+	// configuring kafka FIO consumer
+	ft := consumer.NewFioTopic(a, "localhost:9092", "FIO")
+
 	defer func() {
-		_ = ft.Conn.Close()
+		_ = ft.Reader.Close()
 	}()
 	log.Println("connected to kafka FIO successfully")
 

@@ -15,20 +15,19 @@ type failedFio struct {
 }
 
 type FioFailedTopic struct {
-	Conn *kafka.Conn
+	Writer *kafka.Writer
 }
 
-func NewFioFailedTopic(ctx context.Context, network string, addr string, topic string) (FioFailedTopic, error) {
-	fioFailedConn, err := kafka.DialLeader(ctx, network, addr, topic, 0)
-	if err != nil {
-		return FioFailedTopic{}, err
-	}
+func NewFioFailedTopic(addr string, topic string) FioFailedTopic {
 	return FioFailedTopic{
-		Conn: fioFailedConn,
-	}, nil
+		Writer: &kafka.Writer{
+			Addr:  kafka.TCP(addr),
+			Topic: topic,
+		},
+	}
 }
 
-func (f *FioFailedTopic) SendFio(fio model.Fio, reason string) {
+func (f *FioFailedTopic) SendFio(ctx context.Context, fio model.Fio, reason string) error {
 	fioToSend := failedFio{
 		Name:       fio.Name,
 		Surname:    fio.Surname,
@@ -36,5 +35,5 @@ func (f *FioFailedTopic) SendFio(fio model.Fio, reason string) {
 		Reason:     reason,
 	}
 	fioToSendData, _ := json.Marshal(fioToSend)
-	_, _ = f.Conn.WriteMessages(kafka.Message{Value: fioToSendData})
+	return f.Writer.WriteMessages(ctx, kafka.Message{Value: fioToSendData})
 }
