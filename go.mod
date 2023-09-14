@@ -6,6 +6,8 @@ require (
 	github.com/gin-gonic/gin v1.9.1
 	github.com/go-playground/assert/v2 v2.2.0
 	github.com/go-redis/redis/v8 v8.11.5
+	github.com/graphql-go/graphql v0.8.1
+	github.com/graphql-go/handler v0.2.3
 	github.com/jackc/pgx/v5 v5.4.3
 	github.com/segmentio/kafka-go v0.4.42
 	github.com/stretchr/testify v1.8.3

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fio-service/internal/model"
 	"github.com/jackc/pgx/v5"
+	"log"
 )
 
 const (
@@ -23,26 +24,9 @@ const (
 		LIMIT $13 OFFSET $14;`
 
 	insertFioQuery = `
-		WITH inserted AS (
-			INSERT INTO fios (name, surname, patronymic, age, gender, nation)
-			SELECT $1, $2, $3, $4, $5, $6
-			WHERE NOT EXISTS(
-				SELECT 1 FROM fios
-				WHERE name = $1 AND
-					  surname = $2 AND
-					  patronymic = $3 AND
-					  age = $4 AND
-					  gender = $5 AND
-					  nation = $6
-			)
-			RETURNING id
-		)
-	
-		SELECT
-			CASE
-				WHEN EXISTS (SELECT 1 FROM inserted) THEN (SELECT id FROM inserted)
-				ELSE 0
-			END AS result;`
+		INSERT INTO fios (name, surname, patronymic, age, gender, nation) 
+		VALUES ($1, $2, $3, $4, $5, $6)
+		RETURNING id;`
 
 	updateFioQuery = `
         UPDATE fios
@@ -69,6 +53,7 @@ func (r *Repo) SelectFioById(ctx context.Context, id uint) (model.Fio, error) {
 	if err := row.Scan(&f.Id, &f.Name, &f.Surname, &f.Patronymic, &f.Age, &f.Gender, &f.Nation); errors.Is(err, pgx.ErrNoRows) {
 		return model.Fio{}, model.ErrorFioNotFound
 	} else if err != nil {
+		log.Println("SelectFioById error:", err.Error())
 		return model.Fio{}, model.ErrorFioRepo
 	} else {
 		return f, nil
@@ -85,6 +70,7 @@ func (r *Repo) SelectFioByFilter(ctx context.Context, f model.Filter) ([]model.F
 		f.ByNation, f.Nation,
 		f.Limit, f.Offset)
 	if err != nil {
+		log.Println("SelectFioByFilter error:", err.Error())
 		return nil, model.ErrorFioRepo
 	}
 	defer rows.Close()
@@ -108,6 +94,7 @@ func (r *Repo) InsertFio(ctx context.Context, f model.Fio) (model.Fio, error) {
 		f.Gender,
 		f.Nation).Scan(&insertedFioId)
 	if err != nil {
+		log.Println("InsertFio error:", err.Error())
 		return model.Fio{}, model.ErrorFioRepo
 	}
 
@@ -128,6 +115,7 @@ func (r *Repo) UpdateFio(ctx context.Context, id uint, f model.Fio) (model.Fio, 
 		f.Gender,
 		f.Nation)
 	if err != nil {
+		log.Println("UpdateFio error:", err.Error())
 		return model.Fio{}, model.ErrorFioRepo
 	} else if e.RowsAffected() == 0 {
 		return model.Fio{}, model.ErrorFioNotFound
@@ -147,6 +135,7 @@ func (r *Repo) UpdateFio(ctx context.Context, id uint, f model.Fio) (model.Fio, 
 func (r *Repo) DeleteFio(ctx context.Context, id uint) error {
 	e, err := r.Exec(ctx, deleteFioQuery, id)
 	if err != nil {
+		log.Println("DeleteFio error:", err.Error())
 		return model.ErrorFioRepo
 	} else if e.RowsAffected() == 0 {
 		return model.ErrorFioNotFound

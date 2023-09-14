@@ -3,7 +3,12 @@ package repo
 import (
 	"context"
 	"errors"
+	"fio-service/internal/app"
 	"fio-service/internal/model"
+	"fio-service/internal/repo/cache"
+	"fio-service/internal/repo/permanent"
+	"github.com/go-redis/redis/v8"
+	"github.com/jackc/pgx/v5"
 )
 
 type permanentRepo interface {
@@ -37,6 +42,17 @@ type cacheRepo interface {
 type Repo struct {
 	permanentRepo
 	cacheRepo
+}
+
+func NewRepo(conn *pgx.Conn, rc *redis.Client) app.FioRepo {
+	return &Repo{
+		permanentRepo: &permanent.Repo{
+			Conn: *conn,
+		},
+		cacheRepo: &cache.Repo{
+			Client: *rc,
+		},
+	}
 }
 
 func (r *Repo) AddFio(ctx context.Context, f model.Fio) (model.Fio, error) {
