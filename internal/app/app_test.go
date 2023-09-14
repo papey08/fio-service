@@ -37,8 +37,9 @@ type fillFioMocks struct {
 	nation    string
 	nationErr error
 
-	sendFio model.Fio
-	sendErr string
+	sendFio    model.Fio
+	sendReason string
+	sendErr    error
 
 	fio    model.Fio
 	gotFio model.Fio
@@ -90,14 +91,16 @@ func (s *appTestSuite) TestFillFio() {
 			sendFio: model.Fio{
 				Name: "Dmitriy",
 			},
-			sendErr: model.ErrorFioNoFields.Error(),
+			sendReason: model.ErrorFioNoFields.Error(),
+			sendErr:    nil,
 		},
 		{
 			sendFio: model.Fio{
 				Name:    "X Æ A-12",
 				Surname: "Musk",
 			},
-			sendErr: model.ErrorFioInvalidFields.Error(),
+			sendReason: model.ErrorFioInvalidFields.Error(),
+			sendErr:    nil,
 		},
 		{
 			name:   "qwerty",
@@ -107,7 +110,8 @@ func (s *appTestSuite) TestFillFio() {
 				Name:    "qwerty",
 				Surname: "asdfgh",
 			},
-			sendErr: model.ErrorNonExistName.Error(),
+			sendReason: model.ErrorNonExistName.Error(),
+			sendErr:    nil,
 		},
 	}
 
@@ -164,7 +168,7 @@ func (s *appTestSuite) TestFillFio() {
 		s.apis.On("GetAge", m.name).Return(m.age, m.ageErr).Once()
 		s.apis.On("GetGender", m.name).Return(m.gender, m.genderErr).Once()
 		s.apis.On("GetNation", m.name).Return(m.nation, m.nationErr).Once()
-		s.publisher.On("SendFio", m.sendFio, m.sendErr)
+		s.publisher.On("SendFio", mock.Anything, m.sendFio, m.sendReason).Return(m.sendErr).Once()
 		s.fioRepo.On("AddFio", mock.Anything, m.fio).Return(m.gotFio, m.err).Once()
 	}
 

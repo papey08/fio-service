@@ -2,6 +2,7 @@
 
 package mocks
 
+import context "context"
 import mock "github.com/stretchr/testify/mock"
 import model "fio-service/internal/model"
 
@@ -10,7 +11,16 @@ type Publisher struct {
 	mock.Mock
 }
 
-// SendFio provides a mock function with given fields: fio, reason
-func (_m *Publisher) SendFio(fio model.Fio, reason string) {
-	_m.Called(fio, reason)
+// SendFio provides a mock function with given fields: ctx, fio, reason
+func (_m *Publisher) SendFio(ctx context.Context, fio model.Fio, reason string) error {
+	ret := _m.Called(ctx, fio, reason)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, model.Fio, string) error); ok {
+		r0 = rf(ctx, fio, reason)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
 }
