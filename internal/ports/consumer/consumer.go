@@ -6,6 +6,7 @@ import (
 	"fio-service/internal/app"
 	"fio-service/internal/model"
 	"github.com/segmentio/kafka-go"
+	"log"
 )
 
 type comingFio struct {
@@ -33,6 +34,7 @@ func (f *FioTopic) ListenFio(ctx context.Context) {
 	for {
 		select {
 		case <-ctx.Done():
+			log.Println("gracefully disconnected from kafka")
 			return
 		default:
 			msg, _ := f.Reader.ReadMessage(ctx)

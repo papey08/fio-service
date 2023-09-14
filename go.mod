@@ -11,6 +11,7 @@ require (
 	github.com/jackc/pgx/v5 v5.4.3
 	github.com/segmentio/kafka-go v0.4.42
 	github.com/stretchr/testify v1.8.3
+	golang.org/x/sync v0.1.0
 )
 
 require (

@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fio-service/internal/adapters/apis"
 	"fio-service/internal/adapters/publisher"
 	"fio-service/internal/app"
@@ -9,10 +10,16 @@ import (
 	"fio-service/internal/ports/graphql"
 	"fio-service/internal/ports/rest"
 	"fio-service/internal/repo"
+	"fmt"
 	"github.com/go-redis/redis/v8"
 	"github.com/jackc/pgx/v5"
+	"golang.org/x/sync/errgroup"
 	"log"
+	"net/http"
+	"os"
+	"os/signal"
 	"sync"
+	"syscall"
 	"time"
 )
 
@@ -26,6 +33,36 @@ func FioRepoConfig(ctx context.Context, dbUrl string) *pgx.Conn {
 			return conn
 		}
 	}
+}
+
+func ListenWithGracefulShutdown(ctx context.Context, srv *http.Server, eg *errgroup.Group) {
+	eg.Go(func() error {
+		log.Println("server started")
+		defer log.Println("server gracefully stopped")
+		errCh := make(chan error)
+
+		defer func() {
+			shCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
+			_ = srv.Shutdown(shCtx)
+			close(errCh)
+		}()
+
+		go func() {
+			if err := srv.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
+				errCh <- err
+			}
+		}()
+
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case err := <-errCh:
+			return fmt.Errorf("server unable to listen and serve requests: %w", err)
+		}
+	})
+
+	_ = eg.Wait()
 }
 
 func main() {
@@ -65,19 +102,38 @@ func main() {
 
 	// configuring rest server
 	restServer := rest.NewRESTServer("localhost:8080", a)
-	go func() {
-		defer wg.Done()
-		_ = restServer.ListenAndServe()
-	}()
 
 	//configuring graphql server
 	graphqlServer, err := graphql.NewGraphQLServer(ctx, a, "localhost:8081")
 	if err != nil {
 		log.Fatal("error creating graphql server:", err.Error())
 	}
+
+	// configuring graceful shutdown
+	sigQuit := make(chan os.Signal, 1)
+	defer close(sigQuit)
+	signal.Ignore(syscall.SIGHUP, syscall.SIGPIPE)
+	signal.Notify(sigQuit, syscall.SIGINT, syscall.SIGTERM)
+
+	eg, ctx := errgroup.WithContext(ctx)
+	eg.Go(func() error {
+		select {
+		case s := <-sigQuit:
+			log.Printf("captured signal: %v\n", s)
+			return fmt.Errorf("captured signal: %v", s)
+		case <-ctx.Done():
+			return nil
+		}
+	})
+
 	go func() {
 		defer wg.Done()
-		_ = graphqlServer.ListenAndServe()
+		ListenWithGracefulShutdown(ctx, restServer, eg)
+	}()
+
+	go func() {
+		defer wg.Done()
+		ListenWithGracefulShutdown(ctx, graphqlServer, eg)
 	}()
 
 	// configuring kafka FIO consumer
