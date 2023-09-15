@@ -129,14 +129,14 @@ func main() {
 
 	go func() {
 		defer wg.Done()
-		ListenWithGracefulShutdown(ctx, restServer, eg)
 		logger.Info("started rest server successfully")
+		ListenWithGracefulShutdown(ctx, restServer, eg)
 	}()
 
 	go func() {
 		defer wg.Done()
-		ListenWithGracefulShutdown(ctx, graphqlServer, eg)
 		logger.Info("started graphql server successfully")
+		ListenWithGracefulShutdown(ctx, graphqlServer, eg)
 	}()
 
 	// configuring kafka FIO consumer

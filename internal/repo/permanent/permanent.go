@@ -101,7 +101,7 @@ func (r *Repo) InsertFio(ctx context.Context, f model.Fio) (model.Fio, error) {
 		return model.Fio{}, model.ErrorFioRepo
 	}
 	f.Id = insertedFioId
-	logger.Info("insert fio %s %s in storage", f.Name, f.Surname)
+	logger.Info("insert fio %s %s in storage with id %d", f.Name, f.Surname, insertedFioId)
 	return f, nil
 }
 

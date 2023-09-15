@@ -73,10 +73,10 @@ func (r *Repo) SetFioByKey(ctx context.Context, f model.Fio) (model.Fio, error) 
 	cf := fioToCachedFio(f)
 	data, _ := json.Marshal(cf)
 	if err := r.Set(ctx, strconv.Itoa(f.Id), data, expiration).Err(); err != nil {
-		logger.Error("cannot insert fio %s %s in cache: %s", f.Name, f.Surname, err.Error())
+		logger.Error("cannot insert fio with id %d in cache: %s", f.Id, err.Error())
 		return model.Fio{}, model.ErrorFioRepo
 	}
-	logger.Info("insert fio %s %s in cache", f.Name, f.Surname)
+	logger.Info("insert fio with id %d in cache", f.Id)
 	return f, nil
 }
 
