@@ -156,7 +156,7 @@ func deleteFio(a app.App) gin.HandlerFunc {
 		case errors.Is(err, model.ErrorFioNotFound):
 			c.AbortWithStatusJSON(http.StatusNotFound, errorResponse(err))
 		case err == nil:
-			c.JSON(http.StatusOK, nil)
+			c.JSON(http.StatusOK, errorResponse(nil))
 		default:
 			c.AbortWithStatusJSON(http.StatusBadRequest, errorResponse(err))
 		}

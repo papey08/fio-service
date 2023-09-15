@@ -52,8 +52,15 @@ func fiosSuccessResponse(fios []model.Fio) *gin.H {
 }
 
 func errorResponse(err error) *gin.H {
-	return &gin.H{
-		"data":  nil,
-		"error": err.Error(),
+	if err == nil {
+		return &gin.H{
+			"data":  nil,
+			"error": nil,
+		}
+	} else {
+		return &gin.H{
+			"data":  nil,
+			"error": err.Error(),
+		}
 	}
 }
