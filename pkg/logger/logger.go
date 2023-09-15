@@ -12,6 +12,10 @@ func (l *defaultLogger) ErrorLog(v ...any) {
 	// TODO: init
 }
 
+func (l *defaultLogger) FatalLog(v ...any) {
+	// TODO: init
+}
+
 func DefaultLogger() Logger {
 	return &defaultLogger{}
 }

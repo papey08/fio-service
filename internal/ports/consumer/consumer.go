@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"fio-service/internal/app"
 	"fio-service/internal/model"
+	"fio-service/pkg/logger"
 	"github.com/segmentio/kafka-go"
-	"log"
 )
 
 type comingFio struct {
@@ -34,25 +34,27 @@ func (f *FioTopic) ListenFio(ctx context.Context) {
 	for {
 		select {
 		case <-ctx.Done():
-			log.Println("gracefully disconnected from kafka")
+			logger.Info("disconnected from FIO")
 			return
 		default:
-			msg, _ := f.Reader.ReadMessage(ctx)
-
-			var fio comingFio
-			err := json.Unmarshal(msg.Value, &fio)
+			msg, err := f.Reader.ReadMessage(ctx)
 			if err != nil {
-				// TODO: log
+				logger.Error("cannot get message from FIO: %s", err.Error())
 			}
 
-			_, err = f.App.FillFio(ctx, model.Fio{
+			var fio comingFio
+			err = json.Unmarshal(msg.Value, &fio)
+			if err != nil {
+				logger.Error("cannot get message from FIO: %s", err.Error())
+			}
+
+			logger.Info("adding fio by FIO topic: %s %s", fio.Name, fio.Surname)
+
+			_, _ = f.App.FillFio(ctx, model.Fio{
 				Name:       fio.Name,
 				Surname:    fio.Surname,
 				Patronymic: fio.Patronymic,
 			})
-			if err != nil {
-				// TODO
-			}
 		}
 	}
 }

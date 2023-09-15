@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fio-service/internal/model"
+	"fio-service/pkg/logger"
 	"github.com/segmentio/kafka-go"
 )
 
@@ -36,7 +37,14 @@ func (f *FioFailedTopic) SendFio(ctx context.Context, fio model.Fio, reason stri
 	}
 	fioToSendData, err := json.Marshal(fioToSend)
 	if err != nil {
-		return err
+		logger.Error("cannot send fio %s %s to FIO_FAILED: %s", fio.Name, fio.Surname, err.Error())
+		return model.ErrorSendingFio
 	}
-	return f.Writer.WriteMessages(ctx, kafka.Message{Value: fioToSendData})
+	if err = f.Writer.WriteMessages(ctx, kafka.Message{Value: fioToSendData}); err != nil {
+		logger.Error("cannot send fio %s %s to FIO_FAILED: %s", fio.Name, fio.Surname, err.Error())
+		return model.ErrorSendingFio
+	} else {
+		logger.Info("send fio %s %s to FIO_FAILED", fio.Name, fio.Surname)
+		return nil
+	}
 }

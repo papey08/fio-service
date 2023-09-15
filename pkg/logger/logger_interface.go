@@ -3,6 +3,7 @@ package logger
 type Logger interface {
 	InfoLog(v ...any)
 	ErrorLog(v ...any)
+	FatalLog(v ...any)
 }
 
 var l Logger
@@ -17,4 +18,8 @@ func Info(v ...any) {
 
 func Error(v ...any) {
 	l.ErrorLog()
+}
+
+func Fatal(v ...any) {
+	l.FatalLog()
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fio-service/internal/model"
+	"fio-service/pkg/logger"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -50,10 +51,13 @@ func (r *Repo) SelectFioById(ctx context.Context, id int) (model.Fio, error) {
 	row := r.QueryRow(ctx, selectFioByIdQuery, id)
 	var f model.Fio
 	if err := row.Scan(&f.Id, &f.Name, &f.Surname, &f.Patronymic, &f.Age, &f.Gender, &f.Nation); errors.Is(err, pgx.ErrNoRows) {
+		logger.Info("cannot find fio with id %d: not exist", id)
 		return model.Fio{}, model.ErrorFioNotFound
 	} else if err != nil {
+		logger.Error("cannot find fio with id %d: %s", id, err.Error())
 		return model.Fio{}, model.ErrorFioRepo
 	} else {
+		logger.Info("find fio with id %d", id)
 		return f, nil
 	}
 }
@@ -68,6 +72,7 @@ func (r *Repo) SelectFioByFilter(ctx context.Context, f model.Filter) ([]model.F
 		f.ByNation, f.Nation,
 		f.Limit, f.Offset)
 	if err != nil {
+		logger.Error("cannot find fios with filter: %s", err.Error())
 		return nil, model.ErrorFioRepo
 	}
 	defer rows.Close()
@@ -78,6 +83,7 @@ func (r *Repo) SelectFioByFilter(ctx context.Context, f model.Filter) ([]model.F
 		_ = rows.Scan(&tempFio.Id, &tempFio.Name, &tempFio.Surname, &tempFio.Patronymic, &tempFio.Age, &tempFio.Gender, &tempFio.Nation)
 		fios = append(fios, tempFio)
 	}
+	logger.Info("find fios with filter")
 	return fios, nil
 }
 
@@ -91,13 +97,11 @@ func (r *Repo) InsertFio(ctx context.Context, f model.Fio) (model.Fio, error) {
 		f.Gender,
 		f.Nation).Scan(&insertedFioId)
 	if err != nil {
+		logger.Error("cannot insert fio %s %s: %s", f.Name, f.Surname, err.Error())
 		return model.Fio{}, model.ErrorFioRepo
 	}
-
-	if insertedFioId == 0 {
-		return model.Fio{}, model.ErrorFioAlreadyExists
-	}
 	f.Id = insertedFioId
+	logger.Info("insert fio %s %s", f.Name, f.Surname)
 	return f, nil
 }
 
@@ -111,10 +115,13 @@ func (r *Repo) UpdateFio(ctx context.Context, id int, f model.Fio) (model.Fio, e
 		f.Gender,
 		f.Nation)
 	if err != nil {
+		logger.Error("cannot update fio with id %d: %s", id, err.Error())
 		return model.Fio{}, model.ErrorFioRepo
 	} else if e.RowsAffected() == 0 {
+		logger.Info("cannot update fio with id %d: not exist", id)
 		return model.Fio{}, model.ErrorFioNotFound
 	} else {
+		logger.Info("update fio with id %d", id)
 		return model.Fio{
 			Id:         id,
 			Name:       f.Name,
@@ -130,10 +137,13 @@ func (r *Repo) UpdateFio(ctx context.Context, id int, f model.Fio) (model.Fio, e
 func (r *Repo) DeleteFio(ctx context.Context, id int) error {
 	e, err := r.Exec(ctx, deleteFioQuery, id)
 	if err != nil {
+		logger.Error("cannot delete fio with id %d: %s", id, err.Error())
 		return model.ErrorFioRepo
 	} else if e.RowsAffected() == 0 {
+		logger.Info("cannot delete fio with id %d: not exist", id)
 		return model.ErrorFioNotFound
 	} else {
+		logger.Info("delete fio with id %d", id)
 		return nil
 	}
 }

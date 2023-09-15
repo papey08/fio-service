@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fio-service/internal/app"
 	"fio-service/internal/model"
+	"fio-service/pkg/logger"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"
@@ -16,6 +17,7 @@ func addFio(a app.App) gin.HandlerFunc {
 			c.AbortWithStatusJSON(http.StatusBadRequest, errorResponse(model.ErrorInvalidInput))
 			return
 		}
+		logger.Info("adding fio by rest server: %s %s", reqBody.Name, reqBody.Surname)
 
 		fio, err := a.AddFio(c, model.Fio{
 			Name:       reqBody.Name,
@@ -27,8 +29,6 @@ func addFio(a app.App) gin.HandlerFunc {
 		})
 
 		switch {
-		case errors.Is(err, model.ErrorFioAlreadyExists):
-			c.AbortWithStatusJSON(http.StatusConflict, errorResponse(err))
 		case errors.Is(err, model.ErrorFioNoFields):
 			c.AbortWithStatusJSON(http.StatusBadRequest, errorResponse(err))
 		case errors.Is(err, model.ErrorFioInvalidFields):
@@ -48,6 +48,8 @@ func getFioById(a app.App) gin.HandlerFunc {
 			c.AbortWithStatusJSON(http.StatusBadRequest, errorResponse(model.ErrorInvalidInput))
 			return
 		}
+
+		logger.Info("getting fio with id %d by rest server", id)
 
 		fio, err := a.GetFioById(c, id)
 
@@ -69,6 +71,8 @@ func getFioByFilter(a app.App) gin.HandlerFunc {
 			c.AbortWithStatusJSON(http.StatusBadRequest, errorResponse(model.ErrorInvalidInput))
 			return
 		}
+
+		logger.Info("getting fios with filter by rest server")
 
 		fios, err := a.GetFioByFilter(c, model.Filter{
 			Offset:       reqBody.Offset,
@@ -110,6 +114,8 @@ func updateFio(a app.App) gin.HandlerFunc {
 			return
 		}
 
+		logger.Info("updating fio with id %d by rest server", id)
+
 		fio, err := a.UpdateFio(c, id, model.Fio{
 			Name:       reqBody.Name,
 			Surname:    reqBody.Surname,
@@ -141,6 +147,8 @@ func deleteFio(a app.App) gin.HandlerFunc {
 			c.AbortWithStatusJSON(http.StatusBadRequest, errorResponse(model.ErrorInvalidInput))
 			return
 		}
+
+		logger.Info("deleting fio with id %d by rest server", id)
 
 		err = a.DeleteFio(c, id)
 

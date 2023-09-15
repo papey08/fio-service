@@ -4,6 +4,7 @@ import (
 	"context"
 	"fio-service/internal/app"
 	"fio-service/internal/model"
+	"fio-service/pkg/logger"
 	"github.com/graphql-go/graphql"
 )
 
@@ -41,6 +42,7 @@ func rootMutation(ctx context.Context, a app.App) *graphql.Object {
 					f.Age, _ = p.Args["age"].(int)
 					f.Gender, _ = p.Args["gender"].(string)
 					f.Nation, _ = p.Args["nation"].(string)
+					logger.Info("adding fio by graphql server: %s %s", f.Name, f.Surname)
 					return a.AddFio(ctx, f)
 				},
 			},
@@ -79,6 +81,8 @@ func rootMutation(ctx context.Context, a app.App) *graphql.Object {
 					f.Age, _ = p.Args["age"].(int)
 					f.Gender, _ = p.Args["gender"].(string)
 					f.Nation, _ = p.Args["nation"].(string)
+
+					logger.Info("updating fio with id %d by graphql server", id)
 					return a.UpdateFio(ctx, id, f)
 				},
 			},
@@ -91,6 +95,7 @@ func rootMutation(ctx context.Context, a app.App) *graphql.Object {
 				},
 				Resolve: func(p graphql.ResolveParams) (any, error) {
 					id, _ := p.Args["id"].(int)
+					logger.Info("deleting fio with id %d by graphql server", id)
 					if err := a.DeleteFio(ctx, id); err != nil {
 						return false, err
 					} else {

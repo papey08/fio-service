@@ -10,11 +10,11 @@ import (
 	"fio-service/internal/ports/graphql"
 	"fio-service/internal/ports/rest"
 	"fio-service/internal/repo"
+	"fio-service/pkg/logger"
 	"fmt"
 	"github.com/go-redis/redis/v8"
 	"github.com/jackc/pgx/v5"
 	"golang.org/x/sync/errgroup"
-	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -27,7 +27,7 @@ func FioRepoConfig(ctx context.Context, dbUrl string) *pgx.Conn {
 	for {
 		conn, err := pgx.Connect(ctx, dbUrl)
 		if err != nil {
-			// TODO: log
+			logger.Error("unable to connect to postgres, trying again")
 			time.Sleep(time.Second)
 		} else {
 			return conn
@@ -37,8 +37,7 @@ func FioRepoConfig(ctx context.Context, dbUrl string) *pgx.Conn {
 
 func ListenWithGracefulShutdown(ctx context.Context, srv *http.Server, eg *errgroup.Group) {
 	eg.Go(func() error {
-		log.Println("server started")
-		defer log.Println("server gracefully stopped")
+		defer logger.Info("server gracefully stopped")
 		errCh := make(chan error)
 
 		defer func() {
@@ -68,12 +67,15 @@ func ListenWithGracefulShutdown(ctx context.Context, srv *http.Server, eg *errgr
 func main() {
 	ctx := context.Background()
 
+	// configuring logger
+	logger.InitLogger(logger.DefaultLogger())
+
 	// configuring fio repo permanent storage
 	pgConn := FioRepoConfig(ctx, "postgres://postgres:postgres@localhost:5432/fio_service?sslmode=disable")
 	defer func() {
 		_ = pgConn.Close(ctx)
 	}()
-	log.Println("connected to postgres successfully")
+	logger.Info("connected to postgres successfully")
 
 	// configuring fio repo cache
 	redisCache := redis.NewClient(&redis.Options{
@@ -84,14 +86,14 @@ func main() {
 	defer func() {
 		_ = redisCache.Close()
 	}()
-	log.Println("connected to redis successfully")
+	logger.Info("connected to redis successfully")
 
 	// configuring kafka FIO_FAILED publisher
 	p := publisher.NewFioFailedTopic("localhost:9092", "FIO_FAILED")
 	defer func() {
 		_ = p.Writer.Close()
 	}()
-	log.Println("connected to kafka FIO_FAILED successfully")
+	logger.Info("connected to kafka FIO_FAILED successfully")
 
 	// configuring app
 	fr := repo.NewRepo(pgConn, redisCache)
@@ -106,7 +108,7 @@ func main() {
 	//configuring graphql server
 	graphqlServer, err := graphql.NewGraphQLServer(ctx, a, "localhost:8081")
 	if err != nil {
-		log.Fatal("error creating graphql server:", err.Error())
+		logger.Fatal("error creating graphql server:", err.Error())
 	}
 
 	// configuring graceful shutdown
@@ -119,7 +121,6 @@ func main() {
 	eg.Go(func() error {
 		select {
 		case s := <-sigQuit:
-			log.Printf("captured signal: %v\n", s)
 			return fmt.Errorf("captured signal: %v", s)
 		case <-ctx.Done():
 			return nil
@@ -129,11 +130,13 @@ func main() {
 	go func() {
 		defer wg.Done()
 		ListenWithGracefulShutdown(ctx, restServer, eg)
+		logger.Info("started rest server successfully")
 	}()
 
 	go func() {
 		defer wg.Done()
 		ListenWithGracefulShutdown(ctx, graphqlServer, eg)
+		logger.Info("started graphql server successfully")
 	}()
 
 	// configuring kafka FIO consumer
@@ -142,7 +145,7 @@ func main() {
 	defer func() {
 		_ = ft.Reader.Close()
 	}()
-	log.Println("connected to kafka FIO successfully")
+	logger.Info("connected to kafka FIO successfully")
 
 	go func() {
 		defer wg.Done()
@@ -150,5 +153,4 @@ func main() {
 	}()
 
 	wg.Wait()
-
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fio-service/internal/app"
 	"fio-service/internal/model"
+	"fio-service/pkg/logger"
 	"github.com/graphql-go/graphql"
 )
 
@@ -20,6 +21,7 @@ func rootQuery(ctx context.Context, a app.App) *graphql.Object {
 				},
 				Resolve: func(p graphql.ResolveParams) (any, error) {
 					if id, ok := p.Args["id"].(int); ok {
+						logger.Info("getting fio with id %d by graphql server", id)
 						return a.GetFioById(ctx, id)
 					}
 					return nil, model.ErrorInvalidInput
@@ -85,6 +87,7 @@ func rootQuery(ctx context.Context, a app.App) *graphql.Object {
 						f.ByNation = true
 						f.Nation = nation
 					}
+					logger.Info("getting fios with filter by graphql server")
 					return a.GetFioByFilter(ctx, f)
 				},
 			},
