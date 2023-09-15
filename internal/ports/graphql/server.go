@@ -8,7 +8,8 @@ import (
 	"net/http"
 )
 
-func NewGraphQLServer(ctx context.Context, a app.App, addr string) (*http.Server, error) {
+// NewGraphQLServer creates graphql server with queries and mutations
+func NewGraphQLServer(ctx context.Context, addr string, a app.App) (*http.Server, error) {
 	query := rootQuery(ctx, a)
 	mutation := rootMutation(ctx, a)
 

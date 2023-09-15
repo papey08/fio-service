@@ -5,6 +5,7 @@ import (
 	"log"
 )
 
+// defaultLogger are 3 loggers of different levels
 type defaultLogger struct {
 	infoLogger  *log.Logger
 	errorLogger *log.Logger
@@ -23,6 +24,7 @@ func (dl *defaultLogger) FatalLog(s string) {
 	dl.fatalLogger.Fatal(s)
 }
 
+// DefaultLogger initializes Logger writing logs to writer
 func DefaultLogger(writer io.Writer) Logger {
 	return &defaultLogger{
 		infoLogger:  log.New(writer, "INFO: ", log.Ldate|log.Ltime),

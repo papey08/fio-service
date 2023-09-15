@@ -5,6 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// appRouter adds handlers to server
 func appRouter(r *gin.RouterGroup, a app.App) {
 	r.POST("/fio", addFio(a))
 	r.GET("/fio/:id", getFioById(a))

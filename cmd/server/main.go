@@ -14,26 +14,16 @@ import (
 	"fmt"
 	"github.com/go-redis/redis/v8"
 	"github.com/jackc/pgx/v5"
+	"github.com/joho/godotenv"
 	"golang.org/x/sync/errgroup"
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"sync"
 	"syscall"
 	"time"
 )
-
-func FioRepoConfig(ctx context.Context, dbUrl string) *pgx.Conn {
-	for {
-		conn, err := pgx.Connect(ctx, dbUrl)
-		if err != nil {
-			logger.Error("unable to connect to postgres, trying again")
-			time.Sleep(time.Second)
-		} else {
-			return conn
-		}
-	}
-}
 
 func ListenWithGracefulShutdown(ctx context.Context, srv *http.Server, eg *errgroup.Group) {
 	eg.Go(func() error {
@@ -70,18 +60,41 @@ func main() {
 	// configuring logger
 	logger.InitLogger(logger.DefaultLogger(os.Stdout))
 
+	// loading env variables from .env
+	if err := godotenv.Load("config/.env"); err != nil {
+		logger.Fatal("unable to load .env file: %s", err.Error())
+	}
+
 	// configuring fio repo permanent storage
-	pgConn := FioRepoConfig(ctx, "postgres://postgres:postgres@localhost:5432/fio_service?sslmode=disable")
+	postgresUser := os.Getenv("POSTGRESQL_USER")
+	postgresPass := os.Getenv("POSTGRESQL_PASSWORD")
+	postgresHost := os.Getenv("POSTGRESQL_HOST")
+	postgresPort := os.Getenv("POSTGRESQL_PORT")
+	postgresDb := os.Getenv("POSTGRESQL_DB")
+	postgresSSL := os.Getenv("POSTGRESQL_SSLMODE")
+
+	pgConn, err := pgx.Connect(ctx, fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=%s",
+		postgresUser, postgresPass,
+		postgresHost, postgresPort,
+		postgresDb, postgresSSL))
+	if err != nil {
+		logger.Fatal("unable to connect to postgresql: %s", err.Error())
+	}
 	defer func() {
 		_ = pgConn.Close(ctx)
 	}()
 	logger.Info("connected to postgres successfully")
 
 	// configuring fio repo cache
+	redisDB, err := strconv.Atoi(os.Getenv("REDIS_DB"))
+	if err != nil {
+		logger.Fatal("cannot get redis db: %s", err.Error())
+	}
+
 	redisCache := redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
-		Password: "",
-		DB:       0,
+		Addr:     fmt.Sprintf("%s:%s", os.Getenv("REDIS_HOST"), os.Getenv("REDIS_PORT")),
+		Password: os.Getenv("REDIS_PASSWORD"),
+		DB:       redisDB,
 	})
 	defer func() {
 		_ = redisCache.Close()
@@ -89,7 +102,8 @@ func main() {
 	logger.Info("connected to redis successfully")
 
 	// configuring kafka FIO_FAILED publisher
-	p := publisher.NewFioFailedTopic("localhost:9092", "FIO_FAILED")
+	fioFailedAddr := fmt.Sprintf("%s:%s", os.Getenv("KAFKA_PUBLISHER_HOST"), os.Getenv("KAFKA_PUBLISHER_PORT"))
+	p := publisher.NewFioFailedTopic(fioFailedAddr, os.Getenv("KAFKA_PUBLISHER_TOPIC"))
 	defer func() {
 		_ = p.Writer.Close()
 	}()
@@ -103,10 +117,12 @@ func main() {
 	wg.Add(3)
 
 	// configuring rest server
-	restServer := rest.NewRESTServer("localhost:8080", a)
+	restServerAddr := fmt.Sprintf("%s:%s", os.Getenv("REST_SERVER_HOST"), os.Getenv("REST_SERVER_PORT"))
+	restServer := rest.NewRESTServer(restServerAddr, a)
 
 	//configuring graphql server
-	graphqlServer, err := graphql.NewGraphQLServer(ctx, a, "localhost:8081")
+	graphqlServerAddr := fmt.Sprintf("%s:%s", os.Getenv("GRAPHQL_SERVER_HOST"), os.Getenv("GRAPHQL_SERVER_PORT"))
+	graphqlServer, err := graphql.NewGraphQLServer(ctx, graphqlServerAddr, a)
 	if err != nil {
 		logger.Fatal("error creating graphql server: %s", err.Error())
 	}
@@ -140,7 +156,8 @@ func main() {
 	}()
 
 	// configuring kafka FIO consumer
-	ft := consumer.NewFioTopic(a, "localhost:9092", "FIO")
+	fioAddr := fmt.Sprintf("%s:%s", os.Getenv("KAFKA_CONSUMER_HOST"), os.Getenv("KAFKA_CONSUMER_PORT"))
+	ft := consumer.NewFioTopic(a, fioAddr, os.Getenv("KAFKA_CONSUMER_TOPIC"))
 
 	defer func() {
 		_ = ft.Reader.Close()

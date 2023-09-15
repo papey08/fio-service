@@ -15,11 +15,13 @@ type comingFio struct {
 	Patronymic string `json:"patronymic"`
 }
 
+// FioTopic is a cover over kafka.Reader
 type FioTopic struct {
 	Reader *kafka.Reader
 	app.App
 }
 
+// NewFioTopic configures FioTopic
 func NewFioTopic(a app.App, addr string, topic string) FioTopic {
 	return FioTopic{
 		Reader: kafka.NewReader(kafka.ReaderConfig{
@@ -30,6 +32,7 @@ func NewFioTopic(a app.App, addr string, topic string) FioTopic {
 	}
 }
 
+// ListenFio reads fios from FIO topic
 func (f *FioTopic) ListenFio(ctx context.Context) {
 	for {
 		select {

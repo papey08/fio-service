@@ -15,10 +15,12 @@ type failedFio struct {
 	Reason     string `json:"reason"`
 }
 
+// FioFailedTopic is a cover over kafka.Writer
 type FioFailedTopic struct {
 	Writer *kafka.Writer
 }
 
+// NewFioFailedTopic configures FioFailedTopic
 func NewFioFailedTopic(addr string, topic string) FioFailedTopic {
 	return FioFailedTopic{
 		Writer: &kafka.Writer{
@@ -28,6 +30,7 @@ func NewFioFailedTopic(addr string, topic string) FioFailedTopic {
 	}
 }
 
+// SendFio sends invalid fios to FIO_FAILED topic
 func (f *FioFailedTopic) SendFio(ctx context.Context, fio model.Fio, reason string) error {
 	fioToSend := failedFio{
 		Name:       fio.Name,

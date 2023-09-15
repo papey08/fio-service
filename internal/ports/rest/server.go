@@ -6,8 +6,9 @@ import (
 	"net/http"
 )
 
+// NewRESTServer creates rest server with handlers
 func NewRESTServer(addr string, a app.App) *http.Server {
-	gin.SetMode(gin.DebugMode)
+	gin.SetMode(gin.ReleaseMode)
 	router := gin.Default()
 	api := router.Group("api/v1")
 	appRouter(api, a)

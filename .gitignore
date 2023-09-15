@@ -26,3 +26,6 @@ go.work
 temp*
 kafka_examples
 .gitignore
+
+docker-compose.yml
+Dockerfile
