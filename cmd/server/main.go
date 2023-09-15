@@ -108,7 +108,7 @@ func main() {
 	//configuring graphql server
 	graphqlServer, err := graphql.NewGraphQLServer(ctx, a, "localhost:8081")
 	if err != nil {
-		logger.Fatal("error creating graphql server:", err.Error())
+		logger.Fatal("error creating graphql server: %s", err.Error())
 	}
 
 	// configuring graceful shutdown
