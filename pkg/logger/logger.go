@@ -1,21 +1,32 @@
 package logger
 
+import (
+	"io"
+	"log"
+)
+
 type defaultLogger struct {
-	// TODO: init
+	infoLogger  *log.Logger
+	errorLogger *log.Logger
+	fatalLogger *log.Logger
 }
 
-func (l *defaultLogger) InfoLog(v ...any) {
-	// TODO: init
+func (dl *defaultLogger) InfoLog(s string) {
+	dl.infoLogger.Println(s)
 }
 
-func (l *defaultLogger) ErrorLog(v ...any) {
-	// TODO: init
+func (dl *defaultLogger) ErrorLog(s string) {
+	dl.errorLogger.Println(s)
 }
 
-func (l *defaultLogger) FatalLog(v ...any) {
-	// TODO: init
+func (dl *defaultLogger) FatalLog(s string) {
+	dl.fatalLogger.Fatal(s)
 }
 
-func DefaultLogger() Logger {
-	return &defaultLogger{}
+func DefaultLogger(writer io.Writer) Logger {
+	return &defaultLogger{
+		infoLogger:  log.New(writer, "INFO: ", log.Ldate|log.Ltime),
+		errorLogger: log.New(writer, "ERROR: ", log.Ldate|log.Ltime),
+		fatalLogger: log.New(writer, "FATAL: ", log.Ldate|log.Ltime),
+	}
 }

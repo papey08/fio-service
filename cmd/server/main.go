@@ -68,7 +68,7 @@ func main() {
 	ctx := context.Background()
 
 	// configuring logger
-	logger.InitLogger(logger.DefaultLogger())
+	logger.InitLogger(logger.DefaultLogger(os.Stdout))
 
 	// configuring fio repo permanent storage
 	pgConn := FioRepoConfig(ctx, "postgres://postgres:postgres@localhost:5432/fio_service?sslmode=disable")

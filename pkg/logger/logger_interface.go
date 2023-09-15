@@ -1,9 +1,11 @@
 package logger
 
+import "fmt"
+
 type Logger interface {
-	InfoLog(v ...any)
-	ErrorLog(v ...any)
-	FatalLog(v ...any)
+	InfoLog(s string)
+	ErrorLog(s string)
+	FatalLog(s string)
 }
 
 var l Logger
@@ -12,14 +14,23 @@ func InitLogger(logger Logger) {
 	l = logger
 }
 
-func Info(v ...any) {
-	l.InfoLog(v)
+func Info(format string, v ...any) {
+	if len(v) == 0 {
+		l.InfoLog(format)
+	}
+	l.InfoLog(fmt.Sprintf(format, v...))
 }
 
-func Error(v ...any) {
-	l.ErrorLog()
+func Error(format string, v ...any) {
+	if len(v) == 0 {
+		l.ErrorLog(format)
+	}
+	l.ErrorLog(fmt.Sprintf(format, v...))
 }
 
-func Fatal(v ...any) {
-	l.FatalLog()
+func Fatal(format string, v ...any) {
+	if len(v) == 0 {
+		l.FatalLog(format)
+	}
+	l.FatalLog(fmt.Sprintf(format, v...))
 }
