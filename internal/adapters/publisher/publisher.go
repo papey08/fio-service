@@ -34,6 +34,9 @@ func (f *FioFailedTopic) SendFio(ctx context.Context, fio model.Fio, reason stri
 		Patronymic: fio.Patronymic,
 		Reason:     reason,
 	}
-	fioToSendData, _ := json.Marshal(fioToSend)
+	fioToSendData, err := json.Marshal(fioToSend)
+	if err != nil {
+		return err
+	}
 	return f.Writer.WriteMessages(ctx, kafka.Message{Value: fioToSendData})
 }

@@ -26,7 +26,9 @@ func (a *Apis) GetAge(name string) (int, error) {
 	if err != nil {
 		return 0, model.ErrorApi
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
@@ -55,7 +57,9 @@ func (a *Apis) GetGender(name string) (string, error) {
 	if err != nil {
 		return "", model.ErrorApi
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
@@ -88,7 +92,9 @@ func (a *Apis) GetNation(name string) (string, error) {
 	if err != nil {
 		return "", model.ErrorApi
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
